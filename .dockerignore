@@ -1,0 +1,33 @@
+**/node_modules
+node_modules
+
+*.env*
+**/dist
+
+# Build outputs
+dist
+build
+**/*.tsbuildinfo
+
+# Docker infra
+infrastructure/docker
+docker-compose.yml
+
+# Environment and Secrets
+.env
+.env.*
+!.env.example
+
+# Git
+.git
+.gitignore
+
+#Md files
+*.md
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+/docs

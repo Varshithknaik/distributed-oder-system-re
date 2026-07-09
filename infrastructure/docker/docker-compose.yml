@@ -1,0 +1,49 @@
+services:
+  base-image:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile
+    image: distributed-system-base:latest
+    container_name: base-image
+
+  api-gateway:
+    image: distributed-system-base:latest
+    container_name: api-gateway
+    depends_on:
+      - base-image
+    ports:
+      - '${GATEWAY_PORT}:4000'
+    environment:
+      ORDER_SERVICE_URL: http://order-service:3001
+    command: npx tsx --tsconfig tsconfig.base.json apps/api-gateway/src/index.ts
+
+  # ==============================
+  # KAFKA UI
+  # ==============================
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - '8080:8080'
+    volumes:
+      - ../../cert:/cert
+    environment:
+      KAFKA_CLUSTERS_0_NAME: aiven
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: ${KAFKA_BROKERS}
+      KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: SSL
+      KAFKA_CLUSTERS_0_PROPERTIES_SSL_TRUSTSTORE_TYPE: PEM
+      KAFKA_CLUSTERS_0_PROPERTIES_SSL_KEYSTORE_TYPE: PEM
+      KAFKA_CLUSTERS_0_PROPERTIES_SSL_TRUSTSTORE_LOCATION: /cert/ca.pem
+      KAFKA_CLUSTERS_0_PROPERTIES_SSL_KEYSTORE_LOCATION: /cert/client.pem
+
+  # ==============================
+  # PGADMIN
+  # ==============================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    ports:
+      - '5050:80'
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin

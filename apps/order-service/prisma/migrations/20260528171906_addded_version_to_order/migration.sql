@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Order" ADD COLUMN     "version" INTEGER NOT NULL DEFAULT 1;

@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "outDir": "dist",
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@core/events": ["packages/event-contracts/dist/index"],
+      "@core/kafka": ["packages/kafka-client/dist/index"],
+      "@core/logger": ["packages/logger/dist/index"],
+      "@core/proto": ["packages/proto-pack/dist/index"]
+    }
+  }
+}

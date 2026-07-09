@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+package inventory;
+
+service InventoryService {
+  rpc AddInventory (AddInventoryRequest) returns (AddInventoryResponse);
+  rpc BulkAddInventory (BulkAddInventoryRequest) returns (BulkAddInventoryResponse);
+  rpc UpdateInventory  (UpdateInventoryRequest) returns (UpdateInventoryResponse);
+
+  rpc CheckAvailability(CheckAvailabilityRequest) returns (CheckAvailabilityResponse);
+  rpc ReserveStock(ReserveStockRequest) returns (ReserveStockResponse);
+  rpc ReleaseReservation(ReleaseReservationRequest) returns (ReleaseReservationResponse);
+  rpc ConfirmReservation(ConfirmReservationRequest) returns (ConfirmReservationResponse);
+  // rpc AdjustStock(AdjustStockRequest) returns (AdjustStockResponse);
+  // rpc ListStockMovements(ListStockMovementsRequest) returns (ListStockMovementsResponse);
+
+  // rpc GetReservation(GetReservationRequest) returns (ReservationResponse);
+  // rpc ListReservations(ListReservationsRequest) returns (ListReservationsResponse);
+  // rpc CleanupZombieReservations(CleanupZombieReservationsRequest) returns (CleanupZombieReservationsResponse);
+}
+
+message AddInventoryRequest{
+  string sku = 1;
+  string name = 2;
+  string category = 3;
+  int32 stock = 4;
+  float price = 5;
+  optional float offerPrice = 6;
+}
+
+message AddInventoryResponse{
+  string sku = 1;
+}
+
+message BulkAddInventoryRequest{
+  repeated AddInventoryRequest products = 1;
+}
+
+message BulkAddInventoryResponse{
+  repeated AddInventoryResponse products = 1;
+  int32 totalAdded = 2;
+}
+
+message UpdateInventoryRequest{
+  string sku = 1;
+  optional int32 stock = 2;
+  optional float price = 3;
+  optional float offerPrice = 4;
+  optional string name = 5;
+  optional string category = 6;
+}
+
+message UpdateInventoryResponse{
+  string sku = 1;
+}
+//Stock Item CheckAvailabity
+// Read-only.
+// Does not create reservations.
+// Not sufficient for order creation, because stock can change immediately after the check.
+message StockItem{
+  string sku = 1;
+  int32 quantity = 2;
+}
+
+message CheckAvailabilityRequest {
+  repeated StockItem items = 1;
+}
+
+message StockAvailability {
+  string sku = 1;
+  int32 requestedQuantity = 2;
+  int32 availableStock = 3;
+  bool isAvailable = 4;
+}
+
+message CheckAvailabilityResponse{
+  bool isAvailable = 1;
+  repeated StockAvailability items = 2;
+}
+
+message ReserveStockRequest{
+  string orderId = 1;
+  repeated StockItem items = 2;
+}
+
+message ReserveStockItem{
+  string sku = 1;
+  int32 quantity = 2;
+  float unitPrice = 3; // maps to price
+  optional float offerPrice = 4; // maps to offerPrice
+  int32 remainingStock = 5;
+  int32 version = 6;
+  string productName = 7;
+}
+
+message ReserveStockResponse{
+  string orderId = 1;
+  bool success = 2;
+  repeated ReserveStockItem items = 3;
+  string reason = 4;
+}
+
+message ReleaseReservationRequest{
+  string orderId = 1;
+  repeated string skus = 2;
+  string reason = 3;
+}
+
+message ReleasedStockItem {
+  string sku = 1;
+  int32 quantity = 2;
+  int32 restoredStock = 3;
+  int32 version = 4;
+}
+
+message ReleaseReservationResponse{
+  string orderId = 1;
+  repeated ReleasedStockItem releasedItems = 2;
+}
+
+message ConfirmReservationRequest{
+  string orderId = 1;
+  repeated string skus = 2;
+}
+
+message ConfirmedStockItem{
+  string sku = 1;
+  int32 quantity = 2;
+}
+
+message ConfirmReservationResponse{
+  string orderId = 1;
+  repeated ConfirmedStockItem items = 2;
+}
+  

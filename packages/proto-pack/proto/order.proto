@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package order;
+
+service OrderService{
+  rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
+  rpc CancelOrder ( CancelOrderRequest ) returns ( CancelOrderResponse );
+  // rpc CancelPartialOrder ();
+}
+
+message CreateOrderRequest{
+  string userId=1;
+  repeated OrderItemInput items = 2;
+}
+
+message OrderItemInput{
+  string sku = 1;
+  int32 quantity = 2;
+}
+
+message OrderItemResult{
+  string sku = 1;
+  int32 quantity = 2;
+  float price = 3;
+  optional float offerPrice = 4;
+  float effectiveUnitPrice = 5;
+  float lineTotal = 6;
+  string productName = 7;
+}
+
+message CreateOrderResponse{
+  string orderId = 1;
+  string status = 2;
+  float total = 3;
+  repeated OrderItemResult items = 4;
+  string createdAt = 5;
+}
+
+message CancelOrderRequest {
+  string orderId = 1;
+  string message = 2;
+}
+
+message CancelOrderResponse {
+  string orderId = 1;
+  string status = 2;
+}

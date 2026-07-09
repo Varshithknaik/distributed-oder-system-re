@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "outbox_events" ADD COLUMN     "locked_at" TIMESTAMP(3),
+ADD COLUMN     "locked_by" TEXT;

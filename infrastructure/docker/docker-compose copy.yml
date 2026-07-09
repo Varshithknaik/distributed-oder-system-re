@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  # zookeeper:
+  #   image: confluentinc/cp-zookeeper:7.5.0
+  #   container_name: zookeeper
+  #   environment:
+  #     - ZOOKEEPER_CLIENT_PORT=2181
+  #     - ZOOKEEPER_TICK_TIME=2000
+
+  # kafka:
+  #   image: confluentinc/cp-kafka:7.5.0
+  #   depends_on:
+  #     - zookeeper
+  #   ports:
+  #     - '29092:29092'
+  #   environment:
+  #     - KAFKA_BROKER_ID=1
+  #     - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+  #     - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+  #     - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+  #     - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+  #     - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+
+  mongo-read:
+    image: mongo:7
+    container_name: mongo-read
+    ports:
+      - '27017:27017'
+  # ==============================
+  # BASE IMAGE (BUILT ONCE)
+  # ==============================
+  base-image:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile
+    image: distributed-system-base:latest
+    container_name: base-image
+
+  api-gateway:
+    image: distributed-system-base:latest
+    container_name: api-gateway
+    depends_on:
+      - base-image
+    ports:
+      - '${GATEWAY_PORT}:4000'
+    environment:
+      ORDER_SERVICE_URL: http://order-service:3001
+    command: npx tsx --tsconfig tsconfig.base.json apps/api-gateway/src/index.ts
+
+  # order-service:
+  #   image: distributed-system-base:latest
+  #   depends_on:
+  #     - api-gateway
+  #     - kafka
+  #   environment:
+  #     - KAFKA_BROKERS=${KAFKA_BROKERS}
+  #     - ORDER_DB_URL=${ORDER_DB_URL}
+  #   command: npx tsx --tsconfig tsconfig.base.json apps/order-service/src/index.ts
+
+  # inventory-service:
+  #   build: { context: ../../, dockerfile: infrastructure/docker/Dockerfile }
+  #   depends_on: [kafka, postgres-db]
+  #   environment:
+  #     - KAFKA_BROKERS=${KAFKA_BROKERS}
+  #     - DATABASE_URL=${INVENTORY_DB_URL}
+  #   command: npx tsx apps/inventory-service/src/index.ts
+
+  # payment-service:
+  #   build: { context: ../../, dockerfile: infrastructure/docker/Dockerfile }
+  #   depends_on: [kafka, postgres-db]
+  #   environment:
+  #     - KAFKA_BROKERS=${KAFKA_BROKERS}
+  #     - DATABASE_URL=${PAYMENT_DB_URL}
+  #   command: npx tsx apps/payment-service/src/index.ts
+
+  # read-service:
+  #   image: distributed-system-base:latest
+  #   depends_on:
+  #     - api-gateway
+  #     - kafka
+  #     - mongo-read
+  #   environment:
+  #     - KAFKA_BROKERS=${KAFKA_BROKERS}
+  #     - MONGO_URI=${MONGO_URI}
+  #   command: npx tsx --tsconfig tsconfig.base.json apps/read-service/src/index.ts
+
+  # web-client:
+  #   image: distributed-system-base:latest
+  #   depends_on:
+  #     - api-gateway
+  #   ports:
+  #     - '5173:5173'
+  #   environment:
+  #     - VITE_API_URL=http://localhost:4000
+  #   # We run the dev command so you can edit code and see changes live
+  #   command: npm run dev --workspace=web-client
+
+  # ==============================
+  # KAFKA UI
+  # ==============================
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - '8080:8080'
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+
+  # ==============================
+  # PGADMIN
+  # ==============================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    ports:
+      - '5050:80'
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+
+  # ==============================
+  # MONGO EXPRESS
+  # ==============================
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    depends_on:
+      - mongo-read
+    ports:
+      - '8081:8081'
+    environment:
+      MF_CONFIG_MONGODB_SERVER: mongo-read
+      MF_CONFIG_MONGODB_ENABLE_ADMIN: 'true'

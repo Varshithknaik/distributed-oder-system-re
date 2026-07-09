@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../node_modules/@prisma/client-inventory-service"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Products {
+  sku          String         @id @unique
+  name         String
+  category     String
+  stock        Int            @default(0)
+  price        Float          @default(0)
+  offerPrice   Float?         @map("offer_price")
+  version      Int            @default(1)
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  reservations Reservations[]
+}
+
+model Reservations {
+  id        String            @id @default(cuid())
+  orderId   String            @map("order_id")
+  sku       String
+  product   Products          @relation(fields: [sku], references: [sku])
+  quantity  Int
+  status    ReservationStatus @default(PENDING)
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+
+  @@unique([orderId, sku]) // Idempotency: 1 reservation per order per sku
+  @@index([status]) // Query optimization
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model processedEvent {
+  eventId     String   @id @map("event_id")
+  eventType   String   @map("event_type")
+  topic       String
+  partition   Int
+  offset      BigInt
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@index([eventType])
+  @@index([processedAt])
+  @@map("process_events")
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  PUBLISHED
+  FAILED
+}
+
+model outBoxEvent {
+  id            String       @id @default(cuid())
+  aggregateType String       @map("aggregate_type")
+  aggregateId   String       @map("aggregate_id")
+  eventType     String       @map("event_type")
+  topic         String
+  payload       Json
+  status        OutboxStatus @default(PENDING)
+  attempt       Int          @default(0)
+  nextAttemptAt DateTime     @default(now()) @map("next_attempt_at")
+  lockedAt      DateTime?    @map("locked_at")
+  lockedBy      String?      @map("locked_by")
+  publishedAt   DateTime?    @map("published_at")
+  lastError     String?      @map("last_error")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  @@index([status, nextAttemptAt])
+  @@index([aggregateType, aggregateId])
+  @@index([eventType])
+  @@map("outbox_events")
+}
