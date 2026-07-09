@@ -2,20 +2,23 @@ import { EventEnvelope, ORDER_EVENTS_TYPE } from '@core/events'
 import { logger } from '@core/logger'
 import { prisma } from '../../lib/prisma.js'
 import { processOrderCancelled } from '../../reporitory/order.repository.js'
+import { Prisma } from '@prisma/client-inventory-service'
 
-interface ProcessOrderServiceProps {
+interface ProcessInventoryOrderServiceProps {
   eventEventEnvelop: EventEnvelope<unknown>
   topic: string
   partition: number
   offset: string
+  retry?: number
 }
 
-export const processOrderService = async ({
+export const processInventoryOrderService = async ({
   eventEventEnvelop,
   topic,
   partition,
   offset,
-}: ProcessOrderServiceProps) => {
+  retry = 1,
+}: ProcessInventoryOrderServiceProps) => {
   const { eventType, eventId, payload } = eventEventEnvelop
   try {
     await prisma.$transaction(async (tx) => {
@@ -29,7 +32,6 @@ export const processOrderService = async ({
         },
       })
       switch (eventType) {
-        // TODO: have to handle the postgres errors here
         case ORDER_EVENTS_TYPE.ORDER_CANCELLED:
           console.log('order is cancelled')
           await processOrderCancelled({
@@ -45,9 +47,19 @@ export const processOrderService = async ({
     })
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    console.log(error)
-    logger.info(
-      '[IDEMPOTENT] Event already processed in INVENTORY SERVICE - ORDER'
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      logger.info(
+        '[IDEMPOTENT] Event already processed in INVENTORY SERVICE - ORDER'
+      )
+      return
+    }
+
+    logger.error(
+      `[CRITICAL] Event processing failed in INVENTORY SERVICE - ORDER at ATTEMPT number ${retry}`
     )
+    throw error
   }
 }

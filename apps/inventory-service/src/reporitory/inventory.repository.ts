@@ -326,12 +326,10 @@ export async function reserveStock(payload: ReserveStockRequestInput) {
         )
       )
 
-      console.log(values)
-
       await tx.$executeRaw`
         UPDATE "Products" p
         SET
-          stock = p.stock - v.quantity,
+          stock = p.stock - v.quantity::int,
           version = p.version + 1
           FROM (
             VALUES ${values}

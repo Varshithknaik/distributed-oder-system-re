@@ -9,7 +9,7 @@ export async function processUserEvent(
   topic: string,
   partition: number,
   offset: string,
-  retry = 0
+  retry = 1
 ): Promise<void> {
   const { eventId, eventType, payload } = envelope
 
@@ -42,28 +42,12 @@ export async function processUserEvent(
     })
   } catch (error: any) {
     if (error.code === 'P2002') {
-      logger.info('[IDEMPOTENT] Event already processed in ORDER SERVICE', {
-        eventId,
-        eventType,
-        topic,
-        partition,
-        offset,
-        retry,
-      })
+      logger.info('[IDEMPOTENT] Event already processed in ORDER SERVICE')
       return
     }
 
     logger.error(
-      '[CRITICAL] Event processing failed in ORDER SERVICE',
-      {
-        eventId,
-        eventType,
-        topic,
-        partition,
-        offset,
-        retry,
-      },
-      error
+      `[CRITICAL] Event processing failed in ORDER SERVICE at ATTEMPT number ${retry}`
     )
     throw error
   }

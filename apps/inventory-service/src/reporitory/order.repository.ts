@@ -18,7 +18,7 @@ export const processOrderCancelled = async ({
     )
   }
 
-  const { orderId, version, updatedAt } = parsed.data
+  const { orderId } = parsed.data
 
   const res = await tx.$queryRaw`
     WITH cancelled AS (

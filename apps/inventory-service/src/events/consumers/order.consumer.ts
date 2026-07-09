@@ -3,7 +3,7 @@ import { createKafkaClient } from '../../lib/kafka.js'
 import { createEventEnvelopeSchema, EventEnvelope, TOPICS } from '@core/events'
 import { z } from 'zod'
 import { handlePoisonPill } from '../handlers/poison-pill.handler.js'
-import { processOrderService } from '../handlers/order-message-handler.js'
+import { processInventoryOrderService } from '../handlers/order-message-handler.js'
 
 const clientId = 'order-projection-inventory-service'
 const MAX_RETRIES = 3
@@ -52,16 +52,16 @@ export async function startOrderConsumer() {
       for (; attempt < MAX_RETRIES; attempt++) {
         try {
           await heartbeat()
-          await processOrderService({
+          await processInventoryOrderService({
             eventEventEnvelop: envelope,
             partition,
             offset: message.offset,
             topic,
+            retry: attempt + 1,
           })
 
           lastError = null
         } catch (error) {
-          console.log(error)
           lastError = error instanceof Error ? error : new Error(String(error))
 
           if (attempt < MAX_RETRIES - 1) {
@@ -72,7 +72,6 @@ export async function startOrderConsumer() {
       }
 
       if (lastError) {
-        console.log(lastError)
         await handlePoisonPill(
           {
             kafka: kafkaClient,
