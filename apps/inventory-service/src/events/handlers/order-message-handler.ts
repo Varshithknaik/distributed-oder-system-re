@@ -1,7 +1,7 @@
 import { EventEnvelope, ORDER_EVENTS_TYPE } from '@core/events'
 import { logger } from '@core/logger'
 import { prisma } from '../../lib/prisma.js'
-import { processOrderCancelled } from '../../reporitory/order.repository.js'
+import { processInventoryOrderCancelled } from '../../reporitory/order.repository.js'
 import { Prisma } from '@prisma/client-inventory-service'
 
 interface ProcessInventoryOrderServiceProps {
@@ -33,8 +33,7 @@ export const processInventoryOrderService = async ({
       })
       switch (eventType) {
         case ORDER_EVENTS_TYPE.ORDER_CANCELLED:
-          console.log('order is cancelled')
-          await processOrderCancelled({
+          await processInventoryOrderCancelled({
             payload,
             tx,
           })

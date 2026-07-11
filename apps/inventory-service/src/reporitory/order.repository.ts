@@ -1,4 +1,10 @@
-import { OrderCancelledPayloadSchema } from '@core/events'
+import {
+  EventEnvelope,
+  INVENTORY_EVENTS_TYPE,
+  InventoryStockReservationCancelled,
+  OrderCancelledPayloadSchema,
+  TOPICS,
+} from '@core/events'
 import { ReservationStatus, Prisma } from '@prisma/client-inventory-service'
 
 interface ProcessOrderCancelledProps {
@@ -6,21 +12,28 @@ interface ProcessOrderCancelledProps {
   tx: Prisma.TransactionClient
 }
 
-export const processOrderCancelled = async ({
+interface CancelledStockRow {
+  sku: string
+  quantity: number
+  version: number
+  remainingstock: number
+  updatedAt: Date
+}
+
+export const processInventoryOrderCancelled = async ({
   payload,
   tx,
 }: ProcessOrderCancelledProps) => {
-  console.log(payload)
   const parsed = OrderCancelledPayloadSchema.safeParse(payload)
   if (!parsed.success) {
     throw new Error(
-      '[INVENTORT SERIVE - ORDER] invalid order cancelled event payload'
+      '[INVENTORY SERVICE - ORDER] invalid order cancelled event payload'
     )
   }
 
   const { orderId } = parsed.data
 
-  const res = await tx.$queryRaw`
+  const res = await tx.$queryRaw<CancelledStockRow[]>`
     WITH cancelled AS (
       UPDATE "Reservations"
       SET 
@@ -47,8 +60,34 @@ export const processOrderCancelled = async ({
       version = p.version +   1
     FROM totals t
     WHERE p.sku = t.sku
+    RETURNING p.sku, t.quantity, p.version , p.updated_at as "updatedAt", p.stock AS "remainingstock"
   `
 
-  console.log(res, 'resilver')
-  throw new Error('Not completed')
+  const envelope: EventEnvelope<InventoryStockReservationCancelled> = {
+    eventId: crypto.randomUUID(),
+    eventType: INVENTORY_EVENTS_TYPE.RESERVATION_CANCELLED,
+    occurredAt: new Date().toISOString(),
+    version: 1,
+    payload: {
+      orderId,
+      items: res.map((item) => ({
+        sku: item.sku,
+        quantity: item.quantity,
+        remainingStock: item.remainingstock,
+        version: item.version,
+      })),
+      cancelledAt: new Date().toISOString(),
+    },
+  }
+
+  await tx.outBoxEvent.create({
+    data: {
+      id: envelope.eventId,
+      aggregateId: orderId,
+      aggregateType: 'inventory.events',
+      eventType: INVENTORY_EVENTS_TYPE.RESERVATION_CANCELLED,
+      topic: TOPICS.INVENTORY_EVENTS,
+      payload: envelope,
+    },
+  })
 }

@@ -65,6 +65,9 @@ export const InventoryStockReservedEnvelopeSchema = createEventEnvelopeSchema(
   InventoryStockReservedSchema
 )
 
+export const InventoryStockReservationCancelledEnvelopeSchema =
+  createEventEnvelopeSchema(InventoryStockReservationCancelledSchema)
+
 export type InventoryProductSnapshot = z.infer<typeof InventoryProductSchema>
 export type InventoryStockItem = z.infer<typeof InventoryStockItemSchema>
 export type InventoryProductCreated = z.infer<
