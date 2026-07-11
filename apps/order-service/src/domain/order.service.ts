@@ -9,6 +9,7 @@ import {
   OrderCancelled,
 } from '@core/events'
 import { CancelOrderInput } from '../schema/order.schema.js'
+import { DOMAIN_ERROR_CODE, DomainError } from '../lib/error.js'
 
 export async function createOrder(
   request: CreateOrderRequest
@@ -25,7 +26,10 @@ export async function createOrder(
   const reservation = await reserveStock(paylaod)
 
   if (!reservation.success) {
-    throw new Error(reservation.reason)
+    throw new DomainError(
+      DOMAIN_ERROR_CODE.FAILED_PRECONDITION,
+      reservation.reason
+    )
   }
 
   const total = reservation.items.reduce(

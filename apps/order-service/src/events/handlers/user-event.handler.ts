@@ -3,7 +3,7 @@ import { logger } from '@core/logger'
 import { syncUserCreated } from '../../domain/user-sync.service.js'
 import { prisma } from '../../lib/prisma.js'
 import { recordProcessedEvent } from '../../repository/user.repository.js'
-
+import { Prisma } from '@prisma/client-api-gateway'
 export async function processUserEvent(
   envelope: EventEnvelope<unknown>,
   topic: string,
@@ -40,8 +40,11 @@ export async function processUserEvent(
           )
       }
     })
-  } catch (error: any) {
-    if (error.code === 'P2002') {
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
       logger.info('[IDEMPOTENT] Event already processed in ORDER SERVICE')
       return
     }

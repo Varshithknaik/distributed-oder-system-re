@@ -1,3 +1,4 @@
+import { ServiceError } from '@grpc/grpc-js'
 import { Response } from 'express'
 
 export type ApiSuccessResponse<T> = {
@@ -29,11 +30,22 @@ export function sendError(
   res: Response,
   statusCode: number,
   message: string,
-  error?: unknown
+  details?: unknown
 ) {
   return res.status(statusCode).json({
     success: false,
     message,
-    ...(error !== undefined ? { error } : {}),
+    ...(details !== undefined ? { error: details } : {}),
   } satisfies ApiErrorResponse)
+}
+
+export function parseGrpcError(err: ServiceError) {
+  try {
+    return JSON.parse(err.details)
+  } catch {
+    return {
+      code: err.code,
+      details: err.details,
+    }
+  }
 }

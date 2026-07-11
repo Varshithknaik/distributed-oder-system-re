@@ -2,6 +2,7 @@ import { KafkaClient } from '@core/kafka'
 import { logger } from '@core/logger'
 import { Consumer, KafkaMessage } from 'kafkajs'
 import { DLQ_EVENTS_TYPE } from '@core/events'
+import crypto from 'node:crypto'
 
 interface HandlerContext {
   kafka: KafkaClient

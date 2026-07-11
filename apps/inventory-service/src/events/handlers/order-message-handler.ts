@@ -44,7 +44,6 @@ export const processInventoryOrderService = async ({
           )
       }
     })
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&

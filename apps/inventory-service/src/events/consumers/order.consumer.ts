@@ -20,7 +20,6 @@ export async function startOrderConsumer() {
   })
 
   await consumer.run({
-    autoCommit: false,
     eachMessage: async ({ heartbeat, message, topic, partition }) => {
       await heartbeat()
       let envelope: EventEnvelope<unknown>

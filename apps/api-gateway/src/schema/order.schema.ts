@@ -10,3 +10,7 @@ export const createOrderSchema = z.object({
     )
     .nonempty(),
 })
+
+export const cancelOrderParamsSchema = z.object({
+  orderId: z.string().min(1),
+})

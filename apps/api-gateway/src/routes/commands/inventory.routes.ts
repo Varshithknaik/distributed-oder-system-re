@@ -1,5 +1,9 @@
 import { Router, Request, Response } from 'express'
-import { sendError, sendSuccess } from '../../lib/http-response.js'
+import {
+  parseGrpcError,
+  sendError,
+  sendSuccess,
+} from '../../lib/http-response.js'
 import {
   addInventorySchema,
   updateInventorySchema,
@@ -25,7 +29,7 @@ inventoryRouter.post(
           res,
           grpcStatusToHttp(err.code),
           'Failed to add inventory',
-          err.message
+          parseGrpcError(err)
         )
       }
       return sendSuccess(res, 200, 'Inventory added successfully', resp)
@@ -50,7 +54,7 @@ inventoryRouter.post(
             res,
             grpcStatusToHttp(err.code),
             'Failed to add inventory',
-            err.message
+            parseGrpcError(err)
           )
         }
         return sendSuccess(res, 200, 'Inventory added successfully', resp)
@@ -77,7 +81,7 @@ inventoryRouter.patch(
           res,
           grpcStatusToHttp(err.code),
           'Failed to update inventory',
-          err.message
+          parseGrpcError(err)
         )
       }
       return sendSuccess(res, 200, 'Inventory updated successfully', resp)

@@ -5,6 +5,7 @@ import {
   InventoryBulkCreatedEnvelopeSchema,
   InventoryStockReservedEnvelopeSchema,
   InventoryProductUpdatedEnvelopeSchema,
+  InventoryStockReservationCancelledEnvelopeSchema,
 } from '@core/events'
 import {
   MAX_ATTEMPTS,
@@ -27,6 +28,9 @@ const OUTBOX_HANDLERS: Partial<
   BULK_ADDED: { schema: InventoryBulkCreatedEnvelopeSchema },
   STOCK_RESERVED: { schema: InventoryStockReservedEnvelopeSchema },
   PRODUCT_UPDATED: { schema: InventoryProductUpdatedEnvelopeSchema },
+  RESERVATION_CANCELLED: {
+    schema: InventoryStockReservationCancelledEnvelopeSchema,
+  },
 }
 
 function claimOutboxEvents() {
