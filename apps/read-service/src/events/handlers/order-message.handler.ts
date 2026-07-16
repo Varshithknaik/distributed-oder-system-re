@@ -2,7 +2,10 @@ import mongoose from 'mongoose'
 import { ProcessedEvent } from '../../models/ProcessesEvents.js'
 import { EventEnvelope, ORDER_EVENTS_TYPE } from '@core/events'
 import { logger } from '@core/logger'
-import { processOrderConfirmed } from '../../repository/order.repository.js'
+import {
+  processOrderCancelled,
+  processOrderConfirmed,
+} from '../../repository/order.repository.js'
 
 interface ProcessOrderServiceProps {
   eventEnvelope: EventEnvelope<unknown>
@@ -41,6 +44,8 @@ export async function processOrderService({
         case ORDER_EVENTS_TYPE.ORDER_CONFIRMED:
           await processOrderConfirmed({ ...ctx, eventId })
           break
+        case ORDER_EVENTS_TYPE.ORDER_CANCELLED:
+          await processOrderCancelled({ ...ctx, eventId })
         default:
           logger.error(
             `[READ SERVICE - ORDER] unhanled event of ${eventType} type`,

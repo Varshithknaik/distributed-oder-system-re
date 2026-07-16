@@ -6,6 +6,7 @@ import {
   processBulkAdded,
   processProductAdded,
   processProductUpdated,
+  processStockCancelled,
   processStockReserved,
 } from '../../repository/inventory.repository.js'
 
@@ -55,6 +56,8 @@ export async function processInventoryEvent(
         case INVENTORY_EVENTS_TYPE.STOCK_RESERVED:
           await processStockReserved(ctx)
           break
+        case INVENTORY_EVENTS_TYPE.RESERVATION_CANCELLED:
+          await processStockCancelled(ctx)
         default:
           logger.error('[CRITICAL] Unknown event type in READ SERVICE', logCtx)
       }

@@ -1,4 +1,7 @@
-import { OrderConfirmedPayloadSchema } from '@core/events'
+import {
+  OrderCancelledPayloadSchema,
+  OrderConfirmedPayloadSchema,
+} from '@core/events'
 import { OrderView } from '../models/OrderView.js'
 import { ClientSession } from 'mongoose'
 
@@ -45,6 +48,39 @@ export const processOrderConfirmed = async ({
         projectedAt: new Date(),
       },
     ],
+    { session }
+  )
+}
+
+export const processOrderCancelled = async ({
+  payload,
+  session,
+  eventId,
+}: {
+  payload: unknown
+  session: ClientSession
+  eventId: string
+}) => {
+  const parsed = OrderCancelledPayloadSchema.safeParse(payload)
+  if (!parsed.success) {
+    throw new Error(
+      '[READ SERVICE - ORDER] Invalid order cancelled event payload'
+    )
+  }
+
+  await OrderView.updateOne(
+    {
+      orderId: parsed.data.orderId,
+      version: { $lt: parsed.data.version },
+    },
+    {
+      $set: {
+        lastEventId: eventId,
+        status: parsed.data.status,
+        updatedAt: new Date(parsed.data.updatedAt),
+        projectedAt: new Date(),
+      },
+    },
     { session }
   )
 }

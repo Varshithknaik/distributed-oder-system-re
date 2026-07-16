@@ -2,6 +2,7 @@ import {
   InventoryBulkCreatedSchema,
   InventoryProductCreatedSchema,
   InventoryProductUpdatedSchema,
+  InventoryStockReservationCancelledSchema,
   InventoryStockReservedSchema,
 } from '@core/events'
 import { InventoryView, StockStatus } from '../models/InventoryView.js'
@@ -189,6 +190,60 @@ export const processProductUpdated = async ({
     logger.warn('[READ SERVICE] PRODUCT_UPDATED: some updates were skipped', {
       eventId,
       expected: products.length,
+      matched: result.matchedCount,
+    })
+  }
+}
+
+export const processStockCancelled = async ({
+  payload,
+  eventId,
+  occurredAt,
+  session,
+}: {
+  payload: unknown
+  eventId: string
+  occurredAt: string
+  session: ClientSession
+}) => {
+  const parsed = InventoryStockReservationCancelledSchema.safeParse(payload)
+
+  if (!parsed.success) {
+    throw new Error(
+      '[READ SERVICE] Invalid stock reservation cancelled event payload'
+    )
+  }
+
+  const { items } = parsed.data
+
+  const result = await InventoryView.bulkWrite(
+    items.map(
+      (item) => {
+        return {
+          updateOne: {
+            filter: { sku: item.sku, version: { $lt: item.version } },
+            update: {
+              $set: {
+                version: item.version,
+                stock: item.remainingStock,
+                stockStatus: getStockStatus(item.remainingStock),
+                lastEventId: eventId,
+                projectedAt: new Date(),
+                updatedAt: new Date(occurredAt),
+              },
+            },
+          },
+        }
+      },
+      { session }
+    )
+  )
+
+  const unmatchedCount = items.length - result.matchedCount
+  if (unmatchedCount > 0) {
+    logger.warn('[READ SERVICE] STOCK_CANCELLED: some updates were skipped', {
+      eventId,
+      expected: items.length,
       matched: result.matchedCount,
     })
   }
