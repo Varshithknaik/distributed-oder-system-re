@@ -30,6 +30,7 @@ export default tseslint.config(
       'apps/web-client/',
       '**/prisma.config.ts',
       'eslint.config.js',
+      'background-worker.js',
     ],
   }
 )

@@ -1,7 +1,5 @@
 import dotenv from 'dotenv'
-import { startInventoryConsumer } from './events/consumers/inventory.consumer.js'
 import { connectMongo, disconnectMongo } from './lib/mongo.js'
-import { startOrderConsumer } from './events/consumers/order.consumer.js'
 import { logger } from '@core/logger'
 
 dotenv.config({ quiet: true })
@@ -10,9 +8,7 @@ type ShutdownFn = () => Promise<void>
 
 const start = async () => {
   await connectMongo()
-  const { shutdown: inventoryConsumerShutdown } = await startInventoryConsumer()
-  const { shutdown: orderConsumerShutdown } = await startOrderConsumer()
-  return [inventoryConsumerShutdown, orderConsumerShutdown, disconnectMongo]
+  return [disconnectMongo]
 }
 
 const shutdownTasks: ShutdownFn[] = await start()

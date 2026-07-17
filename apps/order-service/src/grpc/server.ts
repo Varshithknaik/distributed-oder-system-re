@@ -2,7 +2,6 @@ import { OrderServiceService } from '@core/proto'
 import grpc from '@grpc/grpc-js'
 import { logger } from '@core/logger'
 import { env } from '../config/env.js'
-import { startUserConsumer } from '../events/consumers/user.consumer.js'
 import { orderService } from './order.handler.js'
 
 const server = new grpc.Server()
@@ -23,11 +22,8 @@ export async function startOrderGrpc() {
     }
   )
 
-  const { shutdown: userConsumerShutdown } = await startUserConsumer(false)
-
   return {
     shutdown: async () => {
-      await userConsumerShutdown()
       server.forceShutdown()
     },
   }
