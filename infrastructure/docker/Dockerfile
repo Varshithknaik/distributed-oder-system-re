@@ -16,6 +16,7 @@ RUN npm ci
 COPY . .
 RUN npx prisma generate --schema=apps/api-gateway/prisma/schema.prisma
 RUN npx prisma generate --schema=apps/order-service/prisma/schema.prisma
+RUN npx prisma generate --schema=apps/inventory-service/prisma/schema.prisma
 
 RUN npm run proto:gen
 RUN npx tsc -b

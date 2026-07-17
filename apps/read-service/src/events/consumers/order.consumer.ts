@@ -12,7 +12,17 @@ const RETRY_BACKOFF_MS = 1000
 export async function startOrderConsumer() {
   const kafkaClient = createKafkaClient(groupId)
   const consumer = kafkaClient.createConsumer(groupId + '-consumer')
-  await consumer.connect()
+
+  let connected = false
+  while (!connected) {
+    try {
+      await consumer.connect()
+      connected = true
+    } catch (error) {
+      logger.error('[READ SERVICE - ORDER] Kafka connection failed, retrying in 5s...', error)
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+    }
+  }
   await consumer.subscribe({
     topic: TOPICS.ORDER_EVENTS,
     fromBeginning: true,

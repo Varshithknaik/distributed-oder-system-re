@@ -65,13 +65,16 @@ export class KafkaClient {
 
   async getProducer() {
     if (this.producer) return this.producer
-    this.producer = this.createProducer()
+    
+    const producer = this.createProducer()
     try {
-      await this.producer.connect()
+      await producer.connect()
+      this.producer = producer // Only cache it on successful connection
+      return this.producer
     } catch (error) {
-      logger.error(error)
+      logger.error('Failed to connect Kafka Producer:', error)
+      throw error // Let the caller handle the failure and retry later
     }
-    return this.producer
   }
 
   async publish<T>(

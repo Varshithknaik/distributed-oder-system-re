@@ -77,6 +77,7 @@ export const processOrderCancelled = async ({
       $set: {
         lastEventId: eventId,
         status: parsed.data.status,
+        version: parsed.data.version,
         updatedAt: new Date(parsed.data.updatedAt),
         projectedAt: new Date(),
       },

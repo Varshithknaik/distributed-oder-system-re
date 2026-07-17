@@ -43,6 +43,9 @@ function claimOutboxEvents() {
         lockedBy: process.pid?.toString(),
       },
     })
+  }, {
+    maxWait: 5000,
+    timeout: 10000
   })
 }
 
@@ -85,6 +88,8 @@ export function startOrderOutboxPoller() {
           event.payload
         )
       }
+    } catch (error) {
+      logger.error('[ORDER Outbox] Error during outbox polling:', error)
     } finally {
       isRunning = false
     }

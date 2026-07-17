@@ -6,6 +6,7 @@ import {
   TOPICS,
 } from '@core/events'
 import { ReservationStatus, Prisma } from '@prisma/client-inventory-service'
+import crypto from 'node:crypto'
 
 interface ProcessOrderCancelledProps {
   payload: unknown

@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv'
 import path from 'path'
 import { PrismaPg } from '@prisma/adapter-pg'
 import fs from 'fs'
+import { Pool } from 'pg'
 import { PrismaClient } from '@prisma/client-api-gateway'
 
 if (process.env.NODE_ENV !== 'production') {
@@ -20,9 +21,11 @@ function resolvePath(p: string) {
 
 const caPath = resolvePath(process.env.POSTGRES_CA!)
 const connectionString = `${process.env.USERS_DB_URL}`
-const adapter = new PrismaPg({
+const pool = new Pool({
   connectionString,
+  max: 3, // Limit to 3 connections to prevent P2037
   ssl: { ca: fs.readFileSync(caPath, 'utf-8'), rejectUnauthorized: false },
 })
+const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
 export { prisma }

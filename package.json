@@ -30,7 +30,7 @@
     "replay:order:msg": "dotenv -e .env.local -- npx tsx apps/order-service/src/replay.ts",
     "start:all": "concurrently \"node apps/api-gateway/dist/index.js\" \"node apps/order-service/dist/index.js\" \"node apps/read-service/dist/index.js\" \"npm run preview --workspace=web-client\"",
     "proto:gen": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=packages/proto-pack/src/generated --ts_proto_opt=outputServices=grpc-js,esModuleInterop=true,env=node,exportCommonSymbols=false --proto_path=packages/proto-pack/proto packages/proto-pack/proto/*.proto",
-    "start:prod": "NODE_ENV=production concurrently \"node apps/order-service/dist/index.js\" \"node apps/api-gateway/dist/index.js\"",
+    "start:prod": "NODE_ENV=production concurrently \"node apps/order-service/dist/index.js\" \"node apps/inventory-service/dist/index.js\" \"node apps/read-service/dist/index.js\" \"node apps/api-gateway/dist/index.js\"",
     "build:proto": "npm run proto:gen && tsc -b packages/proto-pack",
     "build:event": "tsc -b packages/event-contracts",
     "lint": "eslint .",
