@@ -19,6 +19,5 @@ inventory_saga_lld.md
 
 **/dist
 **/tsconfig.tsbuildinfo
-**/dockerbuild.sh
 **/dev-dist
 .DS_Store
