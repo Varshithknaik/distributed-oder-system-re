@@ -1,0 +1,21 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/order-service-493418/github.com/varshithknaik/distributed-oder-system-re:$COMMIT_SHA'
+      - '-f'
+      - 'infrastructure/docker/Dockerfile'
+      - '.'
+    id: 'Build'
+
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/order-service-493418/github.com/varshithknaik/distributed-oder-system-re:$COMMIT_SHA'
+    id: 'Push'
+
+images:
+  - 'gcr.io/order-service-493418/github.com/varshithknaik/distributed-oder-system-re:$COMMIT_SHA'
