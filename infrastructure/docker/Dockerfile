@@ -4,7 +4,7 @@ WORKDIR /app
 
 RUN apk add --no-cache protobuf
 
-COPY package.json package-lock.json* ./
+COPY package*.json ./
 COPY packages/proto-pack/package.json ./packages/proto-pack/
 COPY packages/event-contracts/package.json ./packages/event-contracts/
 COPY packages/kafka-client/package.json ./packages/kafka-client/
