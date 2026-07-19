@@ -31,7 +31,5 @@ const shutdown = async (signal: NodeJS.Signals) => {
   )
 }
 
-console.log('simple change')
-
 process.once('SIGINT', shutdown)
 process.on('SIGTERM', shutdown)
