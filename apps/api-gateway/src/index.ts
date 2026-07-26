@@ -8,6 +8,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { sendSuccess } from './lib/http-response.js'
 import { inventoryRouter } from './routes/commands/inventory.routes.js'
+import { orderQueryRoute } from './routes/query/order.route.js'
 
 dotenv.config({ quiet: true })
 
@@ -25,6 +26,7 @@ app.use(express.static(fePath))
 app.use('/user', authRouter)
 app.use('/commands/order', orderRouter)
 app.use('/commands/inventory', inventoryRouter)
+app.use('/queries/order', orderQueryRoute)
 
 app.get('/health', (req, res) => {
   return sendSuccess(res, 200, 'OK', {
