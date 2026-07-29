@@ -41,7 +41,11 @@ export const OrderViewSchema = new Schema<IOrderView>(
     createdBy: { type: String, required: true },
     orderId: { type: String, required: true },
     items: { type: [OrderItemSubSchema], default: [] },
-    status: { type: String, required: true },
+    status: {
+      type: String,
+      required: true,
+      enum: ['CANCELLED', 'CONFIRMED', 'PENDING'],
+    },
     total: { type: Number, required: true },
     version: { type: Number, required: true },
     lastEventId: { type: String, required: true },

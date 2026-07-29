@@ -1,6 +1,8 @@
 import z from 'zod'
 import { createEventEnvelopeSchema } from '../envelope.js'
 
+export const OrderStatusSchema = z.enum(['CANCELLED', 'CONFIRMED', 'PENDING'])
+
 export const orderItemSchema = z.object({
   id: z.string(),
   orderId: z.string(),
