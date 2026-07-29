@@ -16,10 +16,16 @@ async function start() {
     await import('./apps/inventory-service/dist/events/consumers/order.consumer.js')
   const { startUserConsumer: startOrderServiceUserConsumer } =
     await import('./apps/order-service/dist/events/consumers/user.consumer.js')
+  const { startUserReadConsumer: startReadServiceUserConsumer } =
+    await import('./apps/read-service/dist/events/consumers/user.consumer.js')
+
+  // Outbox Poller
   const { startOrderOutboxPoller } =
     await import('./apps/order-service/dist/outbox/order-outbox-poller.js')
   const { startInventoryOutboxPoller } =
     await import('./apps/inventory-service/dist/outbox/inventory-outbox-poller.js')
+  const { startUserOutboxPoller } =
+    await import('./apps/api-gateway/dist/outbox/user-outbox-poller.js')
 
   // Read Service
   await connectMongo()
@@ -31,19 +37,24 @@ async function start() {
     await startInventoryServiceOrderConsumer()
   const { shutdown: orderConsumerShutdown } =
     await startOrderServiceUserConsumer()
+  const { shutdown: readServiceUserConsumerShutdown } =
+    await startReadServiceUserConsumer()
 
   // 3. Start Outbox Pollers (these return a synchronous stop function)
   const stopOrderOutbox = await startOrderOutboxPoller()
   const stopInventoryOutbox = await startInventoryOutboxPoller()
+  const stopUserOutbox = await startUserOutboxPoller()
 
   return [
     readServiceInventoryConsumerShutdown,
     readServiceOrderConsumerShutdown,
     inventoryServiceOrderConsumerShutdown,
     orderConsumerShutdown,
+    readServiceUserConsumerShutdown,
     disconnectMongo,
     async () => stopOrderOutbox(),
     async () => stopInventoryOutbox(),
+    async () => stopUserOutbox(),
   ]
 }
 

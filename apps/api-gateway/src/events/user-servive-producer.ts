@@ -17,17 +17,7 @@ export const publish = kafka.publish.bind(kafka)
 export type OutboxEventHandler<T = unknown> = {
   schema: z.ZodType<EventEnvelope<T>>
 }
-// await publish<UserCreatedEvent>(TOPICS.USER_EVENTS, {
-//   eventId: crypto.randomUUID(),
-//   eventType: USER_EVENTS_TYPE.USER_CREATED,
-//   occurredAt: new Date().toISOString(),
-//   version: 1,
-//   payload: {
-//     email: result.data.email,
-//     name: result.data.name,
-//     id: newUser.id,
-//   },
-// })
+
 interface publishOutboxEvent {
   handler: OutboxEventHandler<unknown>
   topic: string

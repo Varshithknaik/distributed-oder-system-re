@@ -26,9 +26,10 @@
     "web:build": "dotenv -e .env.local -- sh -c 'cd apps/web-client && npm run build'",
     "build": "tsc -b",
     "dev:local": "npm run prisma:gateway && npm run prisma:order && npm run prisma:inventory && concurrently \"npm run gateway:local\" \"npm run order:local\" \"npm run inventory:local\" \"npm run read:local\"",
-    "clean": "find . -name 'dist' -type d -exec rm -rf {} +",
+    "clean": "find . -path '*/node_modules' -prune -o -name 'dist' -type d -exec rm -rf {} + -o -name '*.tsbuildinfo' -type f -exec rm -f {} +",
     "replay:order:msg": "dotenv -e .env.local -- npx tsx apps/order-service/src/replay.ts",
     "start:all": "concurrently \"node apps/api-gateway/dist/index.js\" \"node apps/order-service/dist/index.js\" \"node apps/read-service/dist/index.js\" \"npm run preview --workspace=web-client\"",
+    "start:worker": "dotenv -e .env.local -- npx tsx background-worker.js ",
     "proto:gen": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=packages/proto-pack/src/generated --ts_proto_opt=outputServices=grpc-js,esModuleInterop=true,env=node,exportCommonSymbols=false --proto_path=packages/proto-pack/proto packages/proto-pack/proto/*.proto",
     "start:prod": "NODE_ENV=production concurrently \"node apps/order-service/dist/index.js\" \"node apps/inventory-service/dist/index.js\" \"node apps/read-service/dist/index.js\" \"node apps/api-gateway/dist/index.js\"",
     "build:proto": "npm run proto:gen && tsc -b packages/proto-pack",
@@ -67,6 +68,7 @@
     "mongoose": "^9.2.1",
     "pg": "^8.20.0",
     "proto-loader-gen-types": "^1.0.0",
+    "ts-proto-descriptors": "^2.1.0",
     "uuid": "^13.0.0",
     "winston": "^3.19.0"
   }

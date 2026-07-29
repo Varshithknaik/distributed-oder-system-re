@@ -20,8 +20,9 @@ const OUTBOX_HANDLERS: Partial<
 }
 
 function claimOutboxEvents() {
-  return prisma.$transaction(async (tx) => {
-    const rows = await tx.$queryRaw<Array<{ id: string }>>`
+  return prisma.$transaction(
+    async (tx) => {
+      const rows = await tx.$queryRaw<Array<{ id: string }>>`
       SELECT id
       FROM outbox_events
       WHERE status In ('PENDING' , 'FAILED')
@@ -32,21 +33,23 @@ function claimOutboxEvents() {
       FOR UPDATE SKIP LOCKED
     `
 
-    const ids = rows.map((r) => r.id)
-    if (ids.length === 0) return []
+      const ids = rows.map((r) => r.id)
+      if (ids.length === 0) return []
 
-    return await tx.outBoxEvent.updateManyAndReturn({
-      where: { id: { in: ids } },
-      data: {
-        status: 'PROCESSING',
-        lockedAt: new Date(),
-        lockedBy: process.pid?.toString(),
-      },
-    })
-  }, {
-    maxWait: 5000,
-    timeout: 10000
-  })
+      return await tx.outBoxEvent.updateManyAndReturn({
+        where: { id: { in: ids } },
+        data: {
+          status: 'PROCESSING',
+          lockedAt: new Date(),
+          lockedBy: process.pid?.toString(),
+        },
+      })
+    },
+    {
+      maxWait: 5000,
+      timeout: 10000,
+    }
+  )
 }
 
 export function startOrderOutboxPoller() {

@@ -1,4 +1,4 @@
-import { InventoryServiceServer } from 'packages/proto-pack/dist/index.js'
+import { InventoryServiceServer } from '@core/proto'
 import {
   addInventory,
   bulkAddInventory,

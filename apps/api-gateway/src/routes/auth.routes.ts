@@ -1,7 +1,11 @@
 import { Router } from 'express'
 import { Request, Response } from 'express'
-import { publish } from '../events/produce.js'
-import { TOPICS, USER_EVENTS_TYPE, UserCreatedEvent } from '@core/events'
+import {
+  EventEnvelope,
+  TOPICS,
+  USER_EVENTS_TYPE,
+  UserCreatedEvent,
+} from '@core/events'
 import { createUserSchema, loginUserSchema } from '../schema/user.schema.js'
 import { prisma } from '../lib/prisma.js'
 import { logger } from '@core/logger'
@@ -29,7 +33,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
         },
       })
 
-      await publish<UserCreatedEvent>(TOPICS.USER_EVENTS, {
+      const envelope: EventEnvelope<UserCreatedEvent> = {
         eventId: crypto.randomUUID(),
         eventType: USER_EVENTS_TYPE.USER_CREATED,
         occurredAt: new Date().toISOString(),
@@ -38,6 +42,17 @@ authRouter.post('/register', async (req: Request, res: Response) => {
           email: result.data.email,
           name: result.data.name,
           id: newUser.id,
+        },
+      }
+
+      await tx.outboxEvent.create({
+        data: {
+          id: envelope.eventId,
+          aggregateId: newUser.id,
+          aggregateType: 'user.events',
+          eventType: USER_EVENTS_TYPE.USER_CREATED,
+          topic: TOPICS.USER_EVENTS,
+          payload: envelope,
         },
       })
 

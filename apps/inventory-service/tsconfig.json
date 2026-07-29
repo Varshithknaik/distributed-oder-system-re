@@ -5,6 +5,7 @@
   "references": [
     { "path": "../../packages/event-contracts" },
     { "path": "../../packages/kafka-client" },
-    { "path": "../../packages/logger" }
+    { "path": "../../packages/logger" },
+    { "path": "../../packages/proto-pack" }
   ]
 }
