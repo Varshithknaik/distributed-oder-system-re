@@ -1,4 +1,4 @@
-import { UserCreatedEventEnvelopeSchema } from '@core/events'
+import { userCreatedSchema } from '@core/events'
 import { ClientSession } from 'mongoose'
 import { UserView } from '../models/userView.js'
 
@@ -9,14 +9,12 @@ export const processUserCreated = async ({
   payload: unknown
   session: ClientSession
 }) => {
-  const parsed = UserCreatedEventEnvelopeSchema.safeParse(payload)
+  const parsed = userCreatedSchema.safeParse(payload)
   if (!parsed.success) {
-    throw new Error(
-      '[READ SERVICE - USER] Invalid order confirmed event payload'
-    )
+    throw new Error('[READ SERVICE - USER] Invalid user created event payload')
   }
 
-  const { payload: user } = parsed.data
+  const user = parsed.data
 
   await UserView.create(
     [

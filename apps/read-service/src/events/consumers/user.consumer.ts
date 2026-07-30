@@ -34,7 +34,6 @@ export async function startUserReadConsumer() {
   await consumer.subscribe({ topic: TOPICS.USER_EVENTS, fromBeginning: true })
 
   await consumer.run({
-    autoCommit: false,
     eachMessage: async ({ topic, message, partition, heartbeat }) => {
       await heartbeat()
       let envelope: EventEnvelope<unknown>

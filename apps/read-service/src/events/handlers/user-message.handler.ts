@@ -18,16 +18,19 @@ export async function processUserMessage({
   const { eventId, eventType, payload } = eventEnvelope
   const session = await mongoose.startSession()
   try {
-    session.withTransaction(async () => {
-      await ProcessedEvent.create([
-        {
-          eventId,
-          eventType,
-          topic,
-          partition,
-          offset,
-        },
-      ])
+    await session.withTransaction(async () => {
+      await ProcessedEvent.create(
+        [
+          {
+            eventId,
+            eventType,
+            topic,
+            partition,
+            offset,
+          },
+        ],
+        { session }
+      )
 
       const ctx = { payload, session }
 

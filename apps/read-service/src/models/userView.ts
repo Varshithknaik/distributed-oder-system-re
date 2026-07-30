@@ -14,7 +14,9 @@ const UserSchema = new Schema<IUser>(
     name: { type: String, required: true },
     projectedAt: { type: Date, required: true },
   },
-  { versionKey: false, _id: false, timestamps: true }
+  { versionKey: false, timestamps: true }
 )
+
+UserSchema.index({ userId: 1 }, { unique: true })
 
 export const UserView = model<IUser>('UserView', UserSchema)
