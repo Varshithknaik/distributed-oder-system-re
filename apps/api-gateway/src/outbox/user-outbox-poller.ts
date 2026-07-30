@@ -53,15 +53,12 @@ function claimOutboxEvent() {
 
 export function startUserOutboxPoller() {
   let isRunning = false
-  console.log(';started poller')
   const timer = setInterval(async () => {
     if (isRunning) return
     isRunning = true
 
     try {
       const events = await claimOutboxEvent()
-      console.log(events)
-      console.log(';started poller')
       for (const event of events) {
         const handler =
           OUTBOX_HANDLER[event.eventType as keyof typeof USER_EVENTS_TYPE]

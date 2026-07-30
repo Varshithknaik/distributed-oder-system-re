@@ -19,7 +19,10 @@ export async function startOrderConsumer() {
       await consumer.connect()
       connected = true
     } catch (error) {
-      logger.error('[READ SERVICE - ORDER] Kafka connection failed, retrying in 5s...', error)
+      logger.error(
+        '[READ SERVICE - ORDER] Kafka connection failed, retrying in 5s...',
+        error
+      )
       await new Promise((resolve) => setTimeout(resolve, 5000))
     }
   }
