@@ -137,11 +137,11 @@ export async function handlePoisonPill(
         retryCount: 0,
       },
     })
-  } catch (dlqError) {
-    logger.error('Error while sending to DLQ', { error: dlqError })
-  } finally {
     await consumer.commitOffsets([
       { topic, partition, offset: (BigInt(offset) + 1n).toString() },
     ])
+  } catch (dlqError) {
+    logger.error('Error while sending to DLQ', { error: dlqError })
+    throw dlqError
   }
 }

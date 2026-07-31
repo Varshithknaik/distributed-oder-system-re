@@ -1,0 +1,17 @@
+topics:
+  order.events:
+    partitions: 1
+    replicationFactor: 1
+    retentionMs: 604800000
+  user.events:
+    partitions: 1
+    replicationFactor: 1
+    retentionMs: 604800000
+  inventory.events:
+    partitions: 1
+    replicationFactor: 1
+    retentionMs: 604800000
+  dlq:
+    partitions: 1
+    replicationFactor: 1
+    retentionMs: 604800000

@@ -63,12 +63,39 @@ export function startOrderOutboxPoller() {
       const events = await claimOutboxEvents()
 
       for (const event of events) {
-        const handler =
-          OUTBOX_HANDLERS[event.eventType as keyof typeof ORDER_EVENTS_TYPE]
-        if (!handler) {
-          logger.warn(
-            `[ORDER Outbox] No handler found for event type ${event.eventType}`
-          )
+        try {
+          const handler =
+            OUTBOX_HANDLERS[event.eventType as keyof typeof ORDER_EVENTS_TYPE]
+          if (!handler) {
+            logger.warn(
+              `[ORDER Outbox] No handler found for event type ${event.eventType}`
+            )
+            await prisma.outBoxEvent.update({
+              where: { id: event.id },
+              data: {
+                status: 'FAILED',
+                lockedAt: null,
+                lockedBy: null,
+                attempt: event.attempt + 1,
+                nextAttemptAt: nextRetryAt(event.attempt + 1),
+                lastError: 'No handler found for event type ' + event.eventType,
+              },
+            })
+            continue
+          }
+
+          await publishOutboxEvent({
+            handler,
+            topic: event.topic,
+            id: event.id,
+            attempt: event.attempt,
+            aggregateId: event.aggregateId,
+            aggregateType: event.aggregateType,
+            payload: event.payload,
+          })
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error)
           await prisma.outBoxEvent.update({
             where: { id: event.id },
             data: {
@@ -77,21 +104,10 @@ export function startOrderOutboxPoller() {
               lockedBy: null,
               attempt: event.attempt + 1,
               nextAttemptAt: nextRetryAt(event.attempt + 1),
-              lastError: 'No handler found for event type ' + event.eventType,
+              lastError: `[ORDER Service Outbox] Failed to publish outbox event: ${errorMessage}`,
             },
           })
-          continue
         }
-
-        await publishOutboxEvent({
-          handler,
-          topic: event.topic,
-          id: event.id,
-          attempt: event.attempt,
-          aggregateId: event.aggregateId,
-          aggregateType: event.aggregateType,
-          payload: event.payload,
-        })
       }
     } catch (error) {
       logger.error('[ORDER Outbox] Error during outbox polling:', error)

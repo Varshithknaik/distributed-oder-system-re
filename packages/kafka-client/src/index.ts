@@ -121,6 +121,7 @@ export class KafkaClient {
         '[DLQ CRITICAL] Lost message:',
         JSON.stringify(envelope.payload)
       )
+      throw error
     }
   }
 

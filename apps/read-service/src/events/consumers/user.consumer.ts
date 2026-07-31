@@ -44,7 +44,7 @@ export async function startUserReadConsumer() {
       } catch (error) {
         logger.info('[READ SERVICE - USER] Failed to parse message', error)
 
-        handlePoisonPill(
+        await handlePoisonPill(
           {
             kafka: kafkaClient,
             consumer,
@@ -84,7 +84,7 @@ export async function startUserReadConsumer() {
       }
 
       if (lastError) {
-        handlePoisonPill(
+        await handlePoisonPill(
           {
             kafka: kafkaClient,
             consumer,

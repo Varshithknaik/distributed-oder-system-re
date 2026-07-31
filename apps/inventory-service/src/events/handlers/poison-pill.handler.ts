@@ -46,11 +46,11 @@ export const handlePoisonPill = async (
         retryCount: 0,
       },
     })
-  } catch (error) {
-    logger.error('[INVENTORY SERVICE] Failed to send to DLQ', { error })
-  } finally {
     await consumer.commitOffsets([
       { topic, partition, offset: (BigInt(message.offset) + 1n).toString() },
     ])
+  } catch (error) {
+    logger.error('[INVENTORY SERVICE] Failed to send to DLQ', { error })
+    throw error
   }
 }

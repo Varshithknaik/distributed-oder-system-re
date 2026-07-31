@@ -48,13 +48,13 @@ export async function handlePoisonPill(
         retryCount: 0,
       },
     })
+    await consumer.commitOffsets([
+      { topic, partition, offset: (BigInt(offset) + 1n).toString() },
+    ])
   } catch (error) {
     logger.error('Failed to send to DLQ', {
       error,
     })
-  } finally {
-    await consumer.commitOffsets([
-      { topic, partition, offset: (BigInt(offset) + 1n).toString() },
-    ])
+    throw error
   }
 }
