@@ -65,7 +65,7 @@ export class KafkaClient {
 
   async getProducer() {
     if (this.producer) return this.producer
-    
+
     const producer = this.createProducer()
     try {
       await producer.connect()
@@ -80,7 +80,10 @@ export class KafkaClient {
   async publish<T>(
     topic: string,
     envelope: EventEnvelope<T>,
-    headers?: Record<string, string>
+    options?: {
+      key?: string
+      headers?: Record<string, string>
+    }
   ) {
     try {
       const producer = await this.getProducer()
@@ -88,9 +91,9 @@ export class KafkaClient {
         topic,
         messages: [
           {
-            key: envelope.eventId,
+            key: options?.key ?? envelope.eventId,
             value: JSON.stringify(envelope),
-            headers,
+            headers: options?.headers,
           },
         ],
       })
@@ -107,7 +110,7 @@ export class KafkaClient {
       'x-failed-at': envelope.payload.failedAt,
     }
     try {
-      await this.publish(TOPICS.DLQ, envelope, headers)
+      await this.publish(TOPICS.DLQ, envelope, { headers })
       logger.info(
         `[DLQ] Published to ${TOPICS.DLQ} | ` +
           `Original: ${envelope.payload.originalTopic}[${envelope.payload.originalPartition}]:${envelope.payload.originalOffset}`

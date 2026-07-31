@@ -1,8 +1,8 @@
 import { EventEnvelope } from '@core/events'
 import { KafkaClient } from '@core/kafka'
 import { prisma } from '../../lib/prisma.js'
-import { z } from 'zod'
 import { logger } from '@core/logger'
+import { z } from 'zod'
 
 export const MAX_ATTEMPTS = 3
 
@@ -22,16 +22,30 @@ export type OutboxEventHandler<T = unknown> = {
   schema: z.ZodType<EventEnvelope<T>>
 }
 
-export async function publishOutboxEvent<T = unknown>(
-  handler: OutboxEventHandler<T>,
-  topic: string,
-  id: string,
-  attempt: number,
+interface publishOutboxEventProps<T = unknown> {
+  handler: OutboxEventHandler<T>
+  topic: string
+  id: string
+  attempt: number
   payload: unknown
-): Promise<void> {
+  aggregateType: string
+  aggregateId: string
+}
+
+export async function publishOutboxEvent<T = unknown>({
+  handler,
+  topic,
+  id,
+  attempt,
+  payload,
+  aggregateId,
+  aggregateType,
+}: publishOutboxEventProps<T>): Promise<void> {
   try {
     const envelope = handler.schema.parse(payload)
-    await publish(topic, envelope)
+    await publish(topic, envelope, {
+      key: `${aggregateType}:${aggregateId}`,
+    })
 
     await prisma.outBoxEvent.update({
       where: { id },

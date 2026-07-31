@@ -117,19 +117,27 @@ export const processBulkAdded = async ({
 
   const { products } = parsed.data
 
-  await InventoryView.insertMany(
+  await InventoryView.bulkWrite(
     products.map((product) => ({
-      sku: product.sku,
-      name: product.name,
-      category: product.category,
-      stock: product.stock,
-      stockStatus: getStockStatus(product.stock),
-      price: product.price,
-      offerPrice: product.offerPrice,
-      effectivePrice: product.offerPrice ?? product.price,
-      version: product.version,
-      lastEventId: eventId,
-      projectedAt: new Date(occurredAt),
+      updateOne: {
+        filter: { sku: product.sku },
+        update: {
+          $setOnInsert: {
+            sku: product.sku,
+            name: product.name,
+            category: product.category,
+            stock: product.stock,
+            stockStatus: getStockStatus(product.stock),
+            price: product.price,
+            offerPrice: product.offerPrice,
+            effectivePrice: product.offerPrice ?? product.price,
+            version: product.version,
+            lastEventId: eventId,
+            projectedAt: new Date(occurredAt),
+          },
+        },
+        upsert: true,
+      },
     })),
     { session }
   )

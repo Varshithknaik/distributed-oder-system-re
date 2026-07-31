@@ -46,6 +46,7 @@ export async function processOrderService({
           break
         case ORDER_EVENTS_TYPE.ORDER_CANCELLED:
           await processOrderCancelled({ ...ctx, eventId })
+          break
         default:
           logger.error(
             `[READ SERVICE - ORDER] unhanled event of ${eventType} type`,

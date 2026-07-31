@@ -103,13 +103,15 @@ export function startInventoryOutboxPoller() {
           continue
         }
 
-        await publishOutboxEvent(
+        await publishOutboxEvent({
           handler,
-          event.topic,
-          event.id,
-          event.attempt,
-          event.payload
-        )
+          topic: event.topic,
+          id: event.id,
+          attempt: event.attempt,
+          aggregateId: event.aggregateId,
+          aggregateType: event.aggregateType,
+          payload: event.payload,
+        })
       }
     } catch (error) {
       console.error(

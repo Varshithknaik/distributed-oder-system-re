@@ -89,6 +89,8 @@ export function startUserOutboxPoller() {
           id: event.id,
           payload: event.payload,
           attempt: event.attempt,
+          aggregateId: event.aggregateId,
+          aggregateType: event.aggregateType,
         })
       }
     } catch (error) {

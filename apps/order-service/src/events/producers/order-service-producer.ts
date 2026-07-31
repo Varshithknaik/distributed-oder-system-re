@@ -18,16 +18,30 @@ export type OutboxEventHandler<T = unknown> = {
   schema: z.ZodType<EventEnvelope<T>>
 }
 
-export async function publishOutboxEvent<T = unknown>(
-  handler: OutboxEventHandler<T>,
-  topic: string,
-  id: string,
-  attempt: number,
+interface publishOutboxEventProps<T = unknown> {
+  handler: OutboxEventHandler<T>
+  topic: string
+  id: string
+  attempt: number
+  aggregateId: string
+  aggregateType: string
   payload: unknown
-) {
+}
+
+export async function publishOutboxEvent<T = unknown>({
+  handler,
+  topic,
+  id,
+  attempt,
+  aggregateId,
+  aggregateType,
+  payload,
+}: publishOutboxEventProps<T>) {
   try {
     const event = handler.schema.parse(payload)
-    await publish(topic, event)
+    await publish(topic, event, {
+      key: `${aggregateType}:${aggregateId}`,
+    })
 
     await prisma.outBoxEvent.update({
       where: {

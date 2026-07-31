@@ -83,13 +83,15 @@ export function startOrderOutboxPoller() {
           continue
         }
 
-        await publishOutboxEvent(
+        await publishOutboxEvent({
           handler,
-          event.topic,
-          event.id,
-          event.attempt,
-          event.payload
-        )
+          topic: event.topic,
+          id: event.id,
+          attempt: event.attempt,
+          aggregateId: event.aggregateId,
+          aggregateType: event.aggregateType,
+          payload: event.payload,
+        })
       }
     } catch (error) {
       logger.error('[ORDER Outbox] Error during outbox polling:', error)

@@ -58,6 +58,7 @@ export async function processInventoryEvent(
           break
         case INVENTORY_EVENTS_TYPE.RESERVATION_CANCELLED:
           await processStockCancelled(ctx)
+          break
         default:
           logger.error('[CRITICAL] Unknown event type in READ SERVICE', logCtx)
       }

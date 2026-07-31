@@ -108,8 +108,8 @@ export async function bulkAddInventory(products: BulkAddInventoryInput) {
     await tx.outBoxEvent.create({
       data: {
         id: envelope.eventId,
-        aggregateType: 'inventory.product',
-        aggregateId: crypto.randomUUID(),
+        aggregateType: 'inventory.bulk',
+        aggregateId: envelope.eventId,
         topic: TOPICS.INVENTORY_EVENTS,
         eventType: INVENTORY_EVENTS_TYPE.BULK_ADDED,
         payload: envelope,
@@ -304,22 +304,6 @@ export async function reserveStock(payload: ReserveStockRequestInput) {
         })),
       })
 
-      // const caseStatement = requestedItems.map(
-      //   (item) => Prisma.sql`WHEN ${item.sku} THEN ${item.quantity}::int`
-      // )
-
-      // const query = Prisma.sql`
-      //   UPDATE "Products"
-      //   SET
-      //     stock = stock - CASE sku
-      //       ${Prisma.join(caseStatement)}
-      //       ELSE 0
-      //     END,
-      //     version = version + 1
-      //   WHERE sku IN (${Prisma.join(requestedSkus)})
-      // `
-      // await tx.$executeRaw(query)
-
       const values = Prisma.join(
         requestedItems.map(
           ({ sku, quantity }) => Prisma.sql`(${sku},${quantity})`
@@ -360,7 +344,7 @@ export async function reserveStock(payload: ReserveStockRequestInput) {
       await tx.outBoxEvent.create({
         data: {
           id: envelope.eventId,
-          aggregateType: 'inventory.product',
+          aggregateType: 'inventory.reservation',
           aggregateId: payload.orderId,
           topic: TOPICS.INVENTORY_EVENTS,
           eventType: INVENTORY_EVENTS_TYPE.STOCK_RESERVED,

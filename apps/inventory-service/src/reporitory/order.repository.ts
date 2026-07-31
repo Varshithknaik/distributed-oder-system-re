@@ -85,7 +85,7 @@ export const processInventoryOrderCancelled = async ({
     data: {
       id: envelope.eventId,
       aggregateId: orderId,
-      aggregateType: 'inventory.events',
+      aggregateType: 'inventory.reservation',
       eventType: INVENTORY_EVENTS_TYPE.RESERVATION_CANCELLED,
       topic: TOPICS.INVENTORY_EVENTS,
       payload: envelope,

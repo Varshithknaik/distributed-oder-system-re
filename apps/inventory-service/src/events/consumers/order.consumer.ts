@@ -60,6 +60,7 @@ export async function startOrderConsumer() {
           })
 
           lastError = null
+          break
         } catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error))
 
